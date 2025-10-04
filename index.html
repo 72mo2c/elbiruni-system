@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة مخازن تجار الجملة للبقالة - النظام المتكامل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="logo">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="logo-icon">
+                    <i class="fas fa-warehouse"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>نظام  البيرونى</h1>
+                    <p>العملة: جنيه مصري (ج.م)</p>
+                </div>
+            </div>
+            <div class="search-bar">
+                <i class="fas fa-search" style="color: rgba(255, 255, 255, 0.5);"></i>
+                <input type="text" id="searchInput" placeholder="ابحث عن منتجات، عملاء، أو موردين...">
+            </div>
+            <div class="nav-controls">
+                <div class="nav-btn position-relative" id="cartBtn">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="notification-badge" id="cartCount">0</span>
+                </div>
+                <div class="nav-btn position-relative" id="alertBtn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="alertCount">0</span>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar">ت</div>
+                    <div class="user-info">
+                        <h3>مدير النظام</h3>
+                        <p>مصر</p>
+                    </div>
+                    <div class="nav-btn" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="overlay" id="overlay"></div>
+    <div class="main-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-bars"></i> القائمة الرئيسية</h2>
+            </div>
+            <nav class="nav-menu">
+                <div class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>الواجهة الرئيسية</span>
+                </div>
+                <div class="nav-item" data-page="warehouses">
+                    <i class="fas fa-warehouse"></i>
+                    <span>المخازن</span>
+                </div>
+                <div class="nav-item" data-page="inventory">
+                    <i class="fas fa-box"></i>
+                    <span>البضاعة</span>
+                </div>
+                <div class="nav-item" data-page="purchases">
+                    <i class="fas fa-shopping-basket"></i>
+                    <span>المشتريات</span>
+                </div>
+                <div class="nav-item" data-page="sales">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>المبيعات</span>
+                </div>
+                <div class="nav-item" data-page="returns">
+                    <i class="fas fa-undo"></i>
+                    <span>المرتجعات</span>
+                </div>
+                <div class="nav-item" data-page="customers">
+                    <i class="fas fa-users"></i>
+                    <span>العملاء</span>
+                </div>
+                <div class="nav-item" data-page="suppliers">
+                    <i class="fas fa-truck"></i>
+                    <span>الموردين</span>
+                </div>
+                <div class="nav-item" data-page="reports">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>التقارير</span>
+                </div>
+                <div class="nav-item" data-page="alerts">
+                    <i class="fas fa-bell"></i>
+                    <span>التنبيهات</span>
+                </div>
+                <div class="nav-item" data-page="linkfatura">
+                    <i class="fas fa-link"></i>
+                    <span>الربط مع فاتورة</span>
+                </div>
+                <div class="nav-item" data-page="info">
+                    <i class="fas fa-link"></i>
+                    <span>الخازنة والمعلومات</span>
+                </div>
+                <div class="nav-item" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>الإعدادات</span>
+                </div>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <!-- صفحة POS جديدة -->
+<div class="page" id="pos">
+        <div class="page-content">
+            <div class="pos-container">
+                <div class="pos-header">
+                    <h2>نقطة البيع (POS)</h2>
+                    <div class="pos-controls">
+                        <button class="btn btn-success" id="newSalePos">
+                            <i class="fas fa-receipt"></i> فاتورة جديدة
+                        </button>
+                        <button class="btn btn-info" id="holdSale">
+                            <i class="fas fa-pause"></i> إيقاف مؤقت
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="pos-grid">
+                    <!-- لوحة المنتجات -->
+                    <div class="pos-products">
+                        <div class="pos-search">
+                            <input type="text" id="posSearch" placeholder="ابحث بالباركود أو الاسم..." autofocus>
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="products-grid" id="posProductsGrid">
+                            <!-- سيتم تعبئتها بالمنتجات -->
+                        </div>
+                    </div>
+                    
+                    <!-- لوحة الفاتورة -->
+                    <div class="pos-cart">
+                        <div class="cart-header">
+                            <h3>فاتورة البيع</h3>
+                            <div class="customer-info">
+                                <select id="posCustomer" class="form-control">
+                                    <option value="">عميل نقدي</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="cart-items" id="posCartItems">
+                            <!-- عناصر الفاتورة -->
+                        </div>
+                        
+                        <div class="cart-summary">
+                            <div class="summary-row">
+                                <span>الإجمالي:</span>
+                                <span id="posSubtotal">0 ج.م</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>الخصم:</span>
+                                <input type="number" id="posDiscount" value="0" min="0" max="100"> %
+                            </div>
+                            <div class="summary-row">
+                                <span>الضريبة:</span>
+                                <span id="posTax">0 ج.م</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span>المبلغ النهائي:</span>
+                                <span id="posTotal">0 ج.م</span>
+                            </div>
+                        </div>
+                        
+                        <div class="pos-actions">
+                            <button class="btn btn-success btn-lg" id="completeSale">
+                                <i class="fas fa-check"></i> إتمام البيع
+                            </button>
+                            <button class="btn btn-warning" id="printReceipt">
+                                <i class="fas fa-print"></i> طباعة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+            <!-- Dashboard Page -->
+            <div class="page active" id="dashboard">
+                <div class="page-content">
+                    <div class="charts-grid">
+                        <div class="chart-card card-hover">
+                            <div class="chart-header">
+                                <h3>أداء المبيعات والمشتريات الأسبوعي</h3>
+                                <i class="fas fa-chart-line" style="color: var(--primary);"></i>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="salesPurchasesChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card card-hover">
+                            <div class="chart-header">
+                                <h3>توزيع المخزون حسب المخزن</h3>
+                                <i class="fas fa-warehouse" style="color: var(--success);"></i>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="warehousesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="content-grid">
+                        <div class="table-card card-hover">
+                            <div class="table-header">
+                                <h3>أحدث المنتجات</h3>
+                                <div class="table-actions">
+                                    <button class="btn btn-outline" id="refreshBtn">
+                                        <i class="fas fa-sync-alt"></i>
+                                        <span>تحديث</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table id="productsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>المنتج</th>
+                                            <th>المخزن</th>
+                                            <th>الكمية</th>
+                                            <th>السعر</th>
+                                            <th>الحالة</th>
+                                            <th>الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="productsTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="alerts-card table-card card-hover">
+                                <div class="table-header">
+                                    <h3><i class="fas fa-exclamation-triangle"></i> التنبيهات العاجلة</h3>
+                                </div>
+                                <div id="alertsContainer" style="padding: 1.5rem;">
+                                </div>
+                            </div>
+                            <div class="quick-actions-card table-card card-hover" id="tablk">
+                                <div class="table-header">
+                                    <h3><i class="fas fa-bolt"></i> إجراءات سريعة</h3>
+                                </div>
+                                <div style="padding: 1.5rem;">
+                                    <div class="quick-action" id="addProductBtn" style="padding: 0.75rem; border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: var(--transition);">
+                                        <span>إضافة منتج جديد</span>
+                                        <i class="fas fa-plus" style="color: var(--primary);"></i>
+                                    </div>
+                                    <div class="quick-action" id="addPurchaseBtn" style="padding: 0.75rem; border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: var(--transition); margin-top: 0.5rem;">
+                                        <span>فاتورة شراء جديدة</span>
+                                        <i class="fas fa-shopping-basket" style="color: var(--warning);"></i>
+                                    </div>
+                                    <div class="quick-action" id="newSaleBtn" style="padding: 0.75rem; border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: var(--transition); margin-top: 0.5rem;">
+                                        <span>فاتورة بيع جديدة</span>
+                                        <i class="fas fa-shopping-cart" style="color: var(--success);"></i>
+                                    </div>
+                                    <div class="quick-action" id="addWarehouseBtn" style="padding: 0.75rem; border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: var(--transition); margin-top: 0.5rem;">
+                                        <span>إضافة مخزن جديد</span>
+                                        <i class="fas fa-warehouse" style="color: var(--info);"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Warehouses Page -->
+            <div class="page" id="warehouses">
+                <div class="page-content">
+                    <div class="table-card card-hover">
+                        <div class="table-header">
+                            <h3>إدارة المخازن</h3>
+                            <button class="btn btn-primary" id="addWarehouseBtn2">
+                                <i class="fas fa-plus"></i>
+                                <span>إضافة مخزن</span>
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="warehousesTable">
+                                <thead>
+                                    <tr>
+                                        <th>اسم المخزن</th>
+                                        <th>الموقع</th>
+                                        <th>المنتجات</th>
+                                        <th>القيمة</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="warehousesTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-card card-hover" style="margin-top: 1.5rem;">
+                        <div class="table-header">
+                            <h3>عمليات المخزن</h3>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>اختر مخزن المصدر</label>
+                                    <select class="form-control" id="sourceWarehouse">
+                                        <option value="">اختر مخزن</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>اختر مخزن الوجهة</label>
+                                    <select class="form-control" id="destinationWarehouse">
+                                        <option value="">اختر مخزن</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>المنتج</label>
+                                <select class="form-control" id="transferProduct">
+                                    <option value="">اختر منتج</option>
+                                </select>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>الكمية</label>
+                                    <input type="number" class="form-control" id="transferQuantity" min="1" placeholder="أدخل الكمية">
+                                </div>
+                                <div class="form-group">
+                                    <label>السبب</label>
+                                    <input type="text" class="form-control" id="transferReason" placeholder="سبب النقل">
+                                </div>
+                            </div>
+                            <button class="btn btn-info" id="transferBtn">
+                                <i class="fas fa-exchange-alt"></i>
+                                <span>نقل بين المخازن</span>
+                            </button>
+                            <button class="btn btn-warning" id="inventoryBtn" style="margin-right: 0.8rem; margin-top: 10px;">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>جرد مخزن</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Inventory Page -->
+            <div class="page" id="inventory">
+                <div class="page-content">
+                    <div class="table-card card-hover">
+                        <div class="table-header">
+                            <h3>إدارة البضاعة</h3>
+                            <div class="table-actions">
+                                <div class="form-group" style="margin: 0;">
+                                    <select class="form-control" id="warehouseFilter">
+                                        <option value="all">جميع المخازن</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin: 0;">
+                                    <select class="form-control" id="categoryFilter">
+                                        <option value="all">جميع الفئات</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary" id="addProductBtn2">
+                                    <i class="fas fa-plus"></i>
+                                    <span>إضافة</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="inventoryTable">
+                                <thead>
+                                    <tr>
+                                        <th>الباركود</th>
+                                        <th>المنتج</th>
+                                        <th>المخزن</th>
+                                        <th>الفئة</th>
+                                        <th>الكمية</th>
+                                        <th>السعر</th>
+                                        <th>المورد</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventoryTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Purchases Page -->
+            <div class="page" id="purchases">
+                <div class="page-content">
+                    <div class="stats-grid">
+                        <div class="stat-card warning">
+                            <div class="stat-header">
+                                <div class="stat-info">
+                                    <h3>المشتريات اليوم</h3>
+                                    <p id="dailyPurchasesStat">0 ج.م</p>
+                                    <div class="trend up">
+                                        <i class="fas fa-arrow-up"></i>
+                                        <span id="purchasesTrendStat">0%</span>
+                                        <span>عن الأمس</span>
+                                    </div>
+                                </div>
+                                <div class="stat-icon icon-yellow">
+                                    <i class="fas fa-shopping-basket"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card info">
+                            <div class="stat-header">
+                                <div class="stat-info">
+                                    <h3>عدد الفواتير</h3>
+                                    <p id="purchaseInvoiceCount">0</p>
+                                    <div class="trend up">
+                                        <i class="fas fa-arrow-up"></i>
+                                        <span id="purchaseInvoiceTrend">0%</span>
+                                        <span>عن الأمس</span>
+                                    </div>
+                                </div>
+                                <div class="stat-icon icon-blue">
+                                    <i class="fas fa-file-invoice"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card success">
+                            <div class="stat-header">
+                                <div class="stat-info">
+                                    <h3>إجمالي المشتريات</h3>
+                                    <p id="totalPurchases">0 ج.م</p>
+                                    <div class="trend">
+                                        <span>هذا الشهر</span>
+                                    </div>
+                                </div>
+                                <div class="stat-icon icon-green">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-card card-hover">
+                        <div class="table-header">
+                            <h3>سجل فواتير المشتريات</h3>
+                            <button class="btn btn-warning" id="newPurchaseBtn">
+                                <i class="fas fa-plus"></i>
+                                <span>فاتورة شراء جديدة</span>
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="purchasesTable">
+                                <thead>
+                                    <tr>
+                                        <th>رقم الفاتورة</th>
+                                        <th>التاريخ</th>
+                                        <th>المورد</th>
+                                        <th>المخزن</th>
+                                        <th>الإجمالي</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="purchasesTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Sales Page -->
+            <div class="page" id="sales">
+                <div class="page-content">
+                    <div class="stats-grid">
+                        <div class="stat-card success">
+                            <div class="stat-header">
+                                <div class="stat-info">
+                                    <h3>المبيعات اليوم</h3>
+                                    <p id="dailySalesStat">0 ج.م</p>
+                                    <div class="trend up">
+                                        <i class="fas fa-arrow-up"></i>
+                                        <span id="salesTrendStat">0%</span>
+                                        <span>عن الأمس</span>
+                                    </div>
+                                </div>
+                                <div class="stat-icon icon-green">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card info">
+                            <div class="stat-header">
+                                <div class="stat-info">
+                                    <h3>عدد الفواتير</h3>
+                                    <p id="salesInvoiceCount">0</p>
+                                    <div class="trend up">
+                                        <i class="fas fa-arrow-up"></i>
+                                        <span id="salesInvoiceTrend">0%</span>
+                                        <span>عن الأمس</span>
+                                    </div>
+                                </div>
+                                <div class="stat-icon icon-blue">
+                                    <i class="fas fa-file-invoice"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card danger">
+                            <div class="stat-header">
+                                <div class="stat-info">
+                                    <h3>الأرباح</h3>
+                                    <p id="dailyProfit">0 ج.م</p>
+                                    <div class="trend">
+                                        <span>هامش ربح 20%</span>
+                                    </div>
+                                </div>
+                                <div class="stat-icon icon-red">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-card card-hover">
+                        <div class="table-header">
+                            <h3>سجل الفواتير</h3>
+                            <button class="btn btn-success" id="newSaleBtn2">
+                                <i class="fas fa-plus"></i>
+                                <span>فاتورة بيع جديدة</span>
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="invoicesTable">
+                                <thead>
+                                    <tr>
+                                        <th>رقم الفاتورة</th>
+                                        <th>التاريخ</th>
+                                        <th>العميل</th>
+                                        <th>المخزن</th>
+                                        <th>الإجمالي</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invoicesTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Returns Page -->
+            <div class="page" id="returns">
+                <div class="page-content">
+                    <div class="table-card card-hover">
+                        <div class="table-header">
+                            <h3>سجل المرتجعات</h3>
+                            <button class="btn btn-warning" id="newReturnBtn">
+                                <i class="fas fa-undo"></i>
+                                <span>مرتجع جديد</span>
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="returnsTable">
+                                <thead>
+                                    <tr>
+                                        <th>رقم المرتجع</th>
+                                        <th>التاريخ</th>
+                                        <th>النوع</th>
+                                        <th>المرجع</th>
+                                        <th>الإجمالي</th>
+                                        <th>السبب</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="returnsTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Customers Page -->
+            <div class="page" id="customers">
+                <div class="page-content">
+                    <div class="table-card card-hover">
+                        <div class="table-header">
+                            <h3>إدارة العملاء</h3>
+                            <button class="btn btn-info" id="addCustomerBtn">
+                                <i class="fas fa-plus"></i>
+                                <span>إضافة عميل</span>
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="customersTable">
+                                <thead>
+                                    <tr>
+                                        <th>اسم العميل</th>
+                                        <th>الهاتف</th>
+                                        <th>العنوان</th>
+                                        <th>المشتريات</th>
+                                        <th>الرصيد</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customersTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Suppliers Page -->
+            <div class="page" id="suppliers">
+                <div class="page-content">
+                    <div class="table-card card-hover">
+                        <div class="table-header">
+                            <h3>إدارة الموردين</h3>
+                            <button class="btn btn-primary" id="addSupplierBtn">
+                                <i class="fas fa-plus"></i>
+                                <span>إضافة مورد</span>
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="suppliersTable">
+                                <thead>
+                                    <tr>
+                                        <th>اسم المورد</th>
+                                        <th>الهاتف</th>
+                                        <th>العنوان</th>
+                                        <th>المشتريات</th>
+                                        <th>الرصيد</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="suppliersTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Reports Page -->
+            <div class="page" id="reports">
+                <div class="page-content">
+                    <div class="chart-card card-hover">
+                        <div class="chart-header">
+                            <h3>تقارير المخزون والمبيعات</h3>
+                            <div class="table-actions">
+                                <button class="btn btn-outline no-print" id="printReport">
+                                    <i class="fas fa-print"></i>
+                                    <span>طباعة</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="charts-grid">
+                            <div class="chart-container">
+                                <canvas id="reportsChart1"></canvas>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="reportsChart2"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Alerts Page -->
+            <div class="page" id="alerts">
+                <div class="page-content">
+                    <div class="table-card card-hover">
+                        <div class="table-header">
+                            <h3>مركز التنبيهات</h3>
+                            <button class="btn btn-success" id="markAllRead">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>تحديد كمقروء</span>
+                            </button>
+                        </div>
+                        <div id="alertsList" style="padding: 1.5rem;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Link with Fatura -->
+            <div class="page" id="linkfatura">
+                <div class="page-content">
+                    <div class="table-card card-hover">
+                        <div class="table-header">
+                            <h3>الربط مع فاتورة</h3>
+                        </div>
+                        <div id="fatura" style="padding: 1.5rem;">
+                            <div class="form-group">
+                                <label>تفعيل الربط مع منصة فاتورة</label>
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem;">
+                                    <span>مفعل</span>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" id="fatooraEnabled">
+                                        <label for="fatooraEnabled"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>مفتاح API</label>
+                                <input type="text" class="form-control" id="fatooraApiKey" placeholder="أدخل مفتاح API الخاص بمنصة فاتورة">
+                            </div>
+                            <div class="form-group">
+                                <label>رابط API</label>
+                                <input type="text" class="form-control" id="fatooraBaseUrl" placeholder="https://api.fatoora.com/v1" value="https://api.fatoora.com/v1">
+                            </div>
+                            <button class="btn btn-primary" id="testFatooraConnection">
+                                <i class="fas fa-plug"></i>
+                                <span>اختبار الاتصال</span>
+                            </button>
+                            <div id="fatooraTestResult" style="margin-top: 1rem; padding: 1rem; border-radius: 0.5rem; display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- information page -->
+            <div class="page" id="info">
+                <div class="page-content">
+                    <div class="table-card card-hover">
+                        <div class="table-header" style="margin-bottom: 10px;">
+                            <h3> المعلومات </h3>
+                        </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-info">
+                            <h3>إجمالي قيمة المخزون</h3>
+                            <p id="totalInventoryValue">0 ج.م</p>
+                            <div class="trend up">
+                                <i class="fas fa-arrow-up"></i>
+                                <span id="inventoryTrend">0%</span>
+                                <span>منذ الأسبوع الماضي</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon icon-orange">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-header">
+                        <div class="stat-info">
+                            <h3>عدد المخازن</h3>
+                            <p id="totalWarehouses">0</p>
+                            <div class="trend">
+                                <span>المخازن النشطة</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon icon-green">
+                            <i class="fas fa-warehouse"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-header">
+                        <div class="stat-info">
+                            <h3>عدد العملاء</h3>
+                            <p id="totalCustomers">0</p>
+                            <div class="trend up">
+                                <i class="fas fa-arrow-up"></i>
+                                <span id="customersTrend">0%</span>
+                                <span>عملاء جدد</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon icon-blue">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card warning">
+                    <div class="stat-header">
+                        <div class="stat-info">
+                            <h3>المشتريات اليوم</h3>
+                            <p id="dailyPurchases">0 ج.م</p>
+                            <div class="trend up">
+                                <i class="fas fa-arrow-up"></i>
+                                <span id="purchasesTrend">0%</span>
+                                <span>عن الأمس</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon icon-yellow">
+                            <i class="fas fa-shopping-basket"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card danger">
+                    <div class="stat-header">
+                        <div class="stat-info">
+                            <h3>المنتجات منخفضة المخزون</h3>
+                            <p id="lowStockItems">0</p>
+                            <div class="trend down">
+                                <i class="fas fa-arrow-down"></i>
+                                <span id="lowStockTrend">0%</span>
+                                <span>تحتاج لإعادة التوريد</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon icon-red">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-header">
+                        <div class="stat-info">
+                            <h3>المبيعات اليوم</h3>
+                            <p id="dailySales">0 ج.م</p>
+                            <div class="trend up">
+                                <i class="fas fa-arrow-up"></i>
+                                <span id="salesTrend">0%</span>
+                                <span>عن الأمس</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon icon-green">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                </div>
+                </div>
+                
+            <!-- Settings Page -->
+            <div class="page" id="settings">
+                <div class="page-content">
+                    <div class="table-card card-hover">
+                        <div class="table-header">
+                            <h3>الإعدادات</h3>
+                        </div>
+                        <div class="content-grid" style="grid-template-columns: 1fr 1fr; gap: 2rem; padding: 1.5rem;">
+                            <div>
+                                <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem;">إعدادات النظام</h4>
+                                <div class="form-group">
+                                    <label>اللغة</label>
+                                    <select class="form-control" id="languageSelect">
+                                        <option value="ar">العربية</option>
+                                        <option value="en">English</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>العملة</label>
+                                    <select class="form-control" id="currencySelect">
+                                        <option value="EGP">جنيه مصري (ج.م)</option>
+                                        <option value="SAR">ريال سعودي (ر.س)</option>
+                                        <option value="USD">دولار أمريكي ($)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>المنطقة الزمنية</label>
+                                    <select class="form-control" id="timezoneSelect">
+                                        <option value="Africa/Cairo">القاهرة (GMT+2)</option>
+                                        <option value="Asia/Riyadh">الرياض (GMT+3)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem;">إعدادات المخزون</h4>
+                                <div class="form-group">
+                                    <label>تنبيهات المخزون المنخفض</label>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem;">
+                                        <span>مفعل</span>
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" id="lowStockAlert" checked>
+                                            <label for="lowStockAlert"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>إشعارات المبيعات</label>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem;">
+                                        <span>مفعل</span>
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" id="salesAlert" checked>
+                                            <label for="salesAlert"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>إشعارات المشتريات</label>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem;">
+                                        <span>مفعل</span>
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" id="purchasesAlert" checked>
+                                            <label for="purchasesAlert"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="border-top: 1px solid var(--gray-200); padding: 1.5rem; margin-top: 2rem;">
+                            <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem;">نسخ احتياطي واستعادة</h4>
+                            <div style="display: flex; gap: 1rem;">
+                                <button class="btn btn-primary" id="backupBtn">
+                                    <i class="fas fa-upload"></i>
+                                    <span>نسخ احتياطي</span>
+                                </button>
+                                <button class="btn btn-outline" id="restoreBtn">
+                                    <i class="fas fa-download"></i>
+                                    <span>استعادة</span>
+                                </button>
+                            </div>
+                            <input type="file" id="restoreFile" accept=".json" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!-- Add Product Modal -->
+    <div class="modal" id="addProductModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إضافة/تعديل منتج</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editProductId">
+                <input type="hidden" id="editProductRealId">
+                <div class="form-group">
+                    <label>اسم المنتج</label>
+                    <input type="text" class="form-control" id="productName" placeholder="مثال: أرز مصري 5 كجم">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الفئة</label>
+                        <select class="form-control" id="productCategory">
+                            <option value="أرز وحبوب">أرز وحبوب</option>
+                            <option value="سكر وملح">سكر وملح</option>
+                            <option value="زيوت ودهون">زيوت ودهون</option>
+                            <option value="شاي وقهوة">شاي وقهوة</option>
+                            <option value="معكرونة وأرز">معكرونة وأرز</option>
+                            <option value="صلصات وتوابل">صلصات وتوابل</option>
+                            <option value="منظفات">منظفات</option>
+                            <option value="ورق">ورق</option>
+                            <option value="مشروبات">مشروبات</option>
+                            <option value="بطاريات">بطاريات</option>
+                            <option value="إضاءة">إضاءة</option>
+                            <option value="سجائر">سجائر</option>
+                            <option value="حلوى">حلوى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>المخزن</label>
+                        <select class="form-control" id="productWarehouse">
+                            <option value="">اختر مخزن</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الباركود</label>
+                        <input type="text" class="form-control" id="productBarcode" placeholder="2001234567890">
+                    </div>
+                    <div class="form-group">
+                        <label>المورد</label>
+                        <select class="form-control" id="productSupplier">
+                            <option value="">اختر مورد</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الكمية</label>
+                        <input type="number" class="form-control" id="productQuantity" placeholder="100" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>السعر (ج.م)</label>
+                        <input type="number" class="form-control" id="productPrice" placeholder="50" min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>سعر الشراء (ج.م)</label>
+                        <input type="number" class="form-control" id="productPurchasePrice" placeholder="40" min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>الحد الأدنى للمخزون</label>
+                        <input type="number" class="form-control" id="productMinStock" placeholder="20" min="0">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelModal">إلغاء</button>
+                <button class="btn btn-primary" id="saveProduct">حفظ المنتج</button>
+            </div>
+        </div>
+    </div>
+    <!-- Add Warehouse Modal -->
+    <div class="modal" id="addWarehouseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إضافة/تعديل مخزن</h3>
+                <button class="modal-close" id="closeWarehouseModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editWarehouseId">
+                <div class="form-group">
+                    <label>اسم المخزن</label>
+                    <input type="text" class="form-control" id="warehouseName" placeholder="مثال: المخزن الرئيسي">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الموقع</label>
+                        <input type="text" class="form-control" id="warehouseLocation" placeholder="العنوان الكامل">
+                    </div>
+                    <div class="form-group">
+                        <label>المسؤول</label>
+                        <input type="text" class="form-control" id="warehouseManager" placeholder="اسم المسؤول">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الهاتف</label>
+                        <input type="text" class="form-control" id="warehousePhone" placeholder="01000000000">
+                    </div>
+                    <div class="form-group">
+                        <label>البريد الإلكتروني</label>
+                        <input type="email" class="form-control" id="warehouseEmail" placeholder="warehouse@example.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>ملاحظات</label>
+                    <textarea class="form-control" id="warehouseNotes" rows="3" placeholder="ملاحظات إضافية"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelWarehouseModal">إلغاء</button>
+                <button class="btn btn-primary" id="saveWarehouse">حفظ المخزن</button>
+            </div>
+        </div>
+    </div>
+    <!-- Add Purchase Modal -->
+    <div class="modal" id="addPurchaseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>فاتورة شراء جديدة</h3>
+                <button class="modal-close" id="closePurchaseModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>المورد</label>
+                        <select class="form-control" id="purchaseSupplier">
+                            <option value="">اختر مورد</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>المخزن</label>
+                        <select class="form-control" id="purchaseWarehouse">
+                            <option value="">اختر مخزن</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>المنتجات</label>
+                    <div id="purchaseItemsContainer">
+                        <!-- Items will be added here -->
+                    </div>
+                    <button class="btn btn-outline" id="addPurchaseItemBtn" style="margin-top: 1rem;">
+                        <i class="fas fa-plus"></i>
+                        <span>إضافة منتج</span>
+                    </button>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الإجمالي</label>
+                        <input type="text" class="form-control" id="purchaseTotal" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>الخصم (%)</label>
+                        <input type="number" class="form-control" id="purchaseDiscount" min="0" max="100" value="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>ملاحظات</label>
+                    <textarea class="form-control" id="purchaseNotes" rows="2" placeholder="ملاحظات على الفاتورة"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelPurchaseModal">إلغاء</button>
+                <button class="btn btn-warning" id="savePurchase">حفظ فاتورة الشراء</button>
+            </div>
+        </div>
+    </div>
+    <!-- Add Customer Modal -->
+    <div class="modal" id="addCustomerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إضافة/تعديل عميل</h3>
+                <button class="modal-close" id="closeCustomerModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editCustomerId">
+                <div class="form-group">
+                    <label>اسم العميل</label>
+                    <input type="text" class="form-control" id="customerName" placeholder="اسم العميل الكامل">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الهاتف</label>
+                        <input type="text" class="form-control" id="customerPhone" placeholder="01000000000">
+                    </div>
+                    <div class="form-group">
+                        <label>البريد الإلكتروني</label>
+                        <input type="email" class="form-control" id="customerEmail" placeholder="customer@example.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>العنوان</label>
+                    <textarea class="form-control" id="customerAddress" rows="2" placeholder="العنوان الكامل"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الرصيد الافتتاحي</label>
+                        <input type="number" class="form-control" id="customerBalance" min="0" step="0.01" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>الحد الائتماني</label>
+                        <input type="number" class="form-control" id="customerCreditLimit" min="0" step="0.01" value="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>ملاحظات</label>
+                    <textarea class="form-control" id="customerNotes" rows="2" placeholder="ملاحظات إضافية"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelCustomerModal">إلغاء</button>
+                <button class="btn btn-info" id="saveCustomer">حفظ العميل</button>
+            </div>
+        </div>
+    </div>
+    <!-- Add Supplier Modal -->
+    <div class="modal" id="addSupplierModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إضافة/تعديل مورد</h3>
+                <button class="modal-close" id="closeSupplierModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editSupplierId">
+                <div class="form-group">
+                    <label>اسم المورد</label>
+                    <input type="text" class="form-control" id="supplierName" placeholder="اسم المورد أو الشركة">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الهاتف</label>
+                        <input type="text" class="form-control" id="supplierPhone" placeholder="01000000000">
+                    </div>
+                    <div class="form-group">
+                        <label>البريد الإلكتروني</label>
+                        <input type="email" class="form-control" id="supplierEmail" placeholder="supplier@example.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>العنوان</label>
+                    <textarea class="form-control" id="supplierAddress" rows="2" placeholder="العنوان الكامل"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الرصيد الافتتاحي</label>
+                        <input type="number" class="form-control" id="supplierBalance" min="0" step="0.01" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>شروط الدفع</label>
+                        <select class="form-control" id="supplierPaymentTerms">
+                            <option value="cash">نقدي</option>
+                            <option value="30_days">30 يوم</option>
+                            <option value="60_days">60 يوم</option>
+                            <option value="90_days">90 يوم</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>ملاحظات</label>
+                    <textarea class="form-control" id="supplierNotes" rows="2" placeholder="ملاحظات إضافية"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelSupplierModal">إلغاء</button>
+                <button class="btn btn-primary" id="saveSupplier">حفظ المورد</button>
+            </div>
+        </div>
+    </div>
+    <!-- Add Sale Modal -->
+    <div class="modal" id="addSaleModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>فاتورة بيع جديدة</h3>
+                <button class="modal-close" id="closeSaleModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>نوع العميل</label>
+                    <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="radio" name="customerType" value="existing" checked> اختيار من القائمة
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="radio" name="customerType" value="new"> إدخال عميل جديد
+                        </label>
+                    </div>
+                </div>
+                <div id="existingCustomerSection">
+                    <div class="form-group">
+                        <label>العميل</label>
+                        <select class="form-control" id="saleCustomer">
+                            <option value="">اختر عميل</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="newCustomerSection" style="display: none;">
+                    <div class="form-group">
+                        <label>اسم العميل</label>
+                        <input type="text" class="form-control" id="newCustomerName" placeholder="اسم العميل">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>الهاتف</label>
+                            <input type="text" class="form-control" id="newCustomerPhone" placeholder="01000000000">
+                        </div>
+                        <div class="form-group">
+                            <label>العنوان</label>
+                            <input type="text" class="form-control" id="newCustomerAddress" placeholder="العنوان">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>المخزن</label>
+                        <select class="form-control" id="saleWarehouse">
+                            <option value="">اختر مخزن</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>المنتجات</label>
+                    <div id="saleItemsContainer">
+                        <!-- Items will be added here -->
+                    </div>
+                    <button class="btn btn-outline" id="addSaleItemBtn" style="margin-top: 1rem;">
+                        <i class="fas fa-plus"></i>
+                        <span>إضافة منتج</span>
+                    </button>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الإجمالي</label>
+                        <input type="text" class="form-control" id="saleTotal" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>الخصم (%)</label>
+                        <input type="number" class="form-control" id="saleDiscount" min="0" max="100" value="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>ملاحظات</label>
+                    <textarea class="form-control" id="saleNotes" rows="2" placeholder="ملاحظات على الفاتورة"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelSaleModal">إلغاء</button>
+                <button class="btn btn-success" id="saveSale">حفظ فاتورة البيع</button>
+            </div>
+        </div>
+    </div>
+    <!-- Inventory Modal -->
+    <div class="modal" id="inventoryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>جرد المخزن</h3>
+                <button class="modal-close" id="closeInventoryModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>اختر المخزن</label>
+                    <select class="form-control" id="inventoryWarehouse">
+                        <option value="">اختر مخزن</option>
+                    </select>
+                </div>
+                <div id="inventoryItemsContainer" style="margin-top: 1rem;">
+                    <!-- Inventory items will be loaded here -->
+                </div>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label>ملاحظات الجرد</label>
+                    <textarea class="form-control" id="inventoryNotes" rows="2" placeholder="ملاحظات على عملية الجرد"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelInventoryModal">إلغاء</button>
+                <button class="btn btn-warning" id="saveInventory">حفظ الجرد</button>
+            </div>
+        </div>
+    </div>
+    <!-- Shopping Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h2>عربة التسوق</h2>
+            <button class="cart-close" id="closeCart">&times;</button>
+        </div>
+        <div class="cart-body" id="cartItems">
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>الإجمالي:</span>
+                <span id="cartTotal">0 ج.م</span>
+            </div>
+            <button class="btn btn-success" style="width: 100%;" id="checkoutBtn">إتمام عملية البيع</button>
+        </div>
+    </div>
+    <!-- Invoice Print Area -->
+    <div id="invoicePrintArea" style="display: none;">
+        <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 20px;">
+            <h2 style="font-size: 24px; margin-bottom: 10px;">فاتورة بيع</h2>
+            <p style="font-size: 16px; margin-bottom: 5px;">نظام إدارة المخازن المتكامل</p>
+            <p style="font-size: 14px;">التاريخ: <span id="printInvoiceDate"></span></p>
+            <p style="font-size: 14px;">رقم الفاتورة: <span id="printInvoiceNumber"></span></p>
+            <p style="font-size: 14px;">المخزن: <span id="printWarehouseName"></span></p>
+            <p style="font-size: 14px;">العميل: <span id="printCustomerName"></span></p>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <thead>
+                <tr>
+                    <th style="border: 1px solid #000; padding: 8px; background-color: #f8fafc;">المنتج</th>
+                    <th style="border: 1px solid #000; padding: 8px; background-color: #f8fafc;">الكمية</th>
+                    <th style="border: 1px solid #000; padding: 8px; background-color: #f8fafc;">السعر</th>
+                    <th style="border: 1px solid #000; padding: 8px; background-color: #f8fafc;">الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody id="printInvoiceItems">
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" style="border: 1px solid #000; padding: 8px; text-align: right; font-weight: bold;">الإجمالي:</td>
+                    <td style="border: 1px solid #000; padding: 8px; font-weight: bold;" id="printInvoiceTotal"></td>
+                </tr>
+            </tfoot>
+        </table>
+        <div style="text-align: center; margin-top: 30px;">
+            <p style="font-size: 14px;">شكراً لتعاملكم معنا</p>
+        </div>
+    </div>
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

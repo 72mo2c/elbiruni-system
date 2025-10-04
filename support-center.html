@@ -1,0 +1,241 @@
+<!-- support-center.html -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مركز الدعم - نظام إدارة المخازن المتكامل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #f97316;
+            --primary-dark: #ea580c;
+            --secondary: #0f172a;
+            --success: #10b981;
+            --danger: #ef4444;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f8fafc;
+            color: var(--dark);
+            min-height: 100vh;
+            direction: rtl;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--primary);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+        th, td {
+            padding: 1rem;
+            text-align: right;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        th {
+            background-color: var(--gray-100);
+            color: var(--gray-500);
+        }
+        .status-active {
+            color: var(--success);
+        }
+        .status-inactive {
+            color: var(--danger);
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-toggle {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-toggle:hover {
+            background: var(--primary-dark);
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.5rem;
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            background-color: var(--success);
+        }
+        .toast.error {
+            background-color: var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-headset"></i> مركز الدعم الفني</h1>
+
+        <h2>إدارة المستخدمين</h2>
+        <table id="usersTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>اسم المستخدم</th>
+                    <th>الاسم الكامل</th>
+                    <th>الدور</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+        </table>
+
+        <h2>إرسال تنبيه</h2>
+        <div class="form-group">
+            <label>المستخدم</label>
+            <select id="alertUser" class="form-control">
+                <option value="">اختر مستخدم</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>الأولوية</label>
+            <select id="alertPriority" class="form-control">
+                <option value="low">منخفضة</option>
+                <option value="medium">متوسطة</option>
+                <option value="high">عالية</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>العنوان</label>
+            <input type="text" id="alertTitle" class="form-control" placeholder="عنوان التنبيه">
+        </div>
+        <div class="form-group">
+            <label>الرسالة</label>
+            <textarea id="alertMessage" class="form-control" rows="3" placeholder="محتوى التنبيه"></textarea>
+        </div>
+        <button id="sendAlertBtn" class="btn btn-toggle">إرسال تنبيه</button>
+    </div>
+
+    <div class="toast" id="toast" style="display:none;"></div>
+
+    <script>
+       
+
+        // Load users
+        async function loadUsers() {
+            try {
+                const users = await apiFetch('/support/users');
+                const usersSelect = document.getElementById('alertUser');
+                const tbody = document.getElementById('usersTableBody');
+                tbody.innerHTML = '';
+                usersSelect.innerHTML = '<option value="">اختر مستخدم</option>';
+                users.forEach(user => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${user.id}</td>
+                        <td>${user.username}</td>
+                        <td>${user.fullName}</td>
+                        <td>${user.role}</td>
+                        <td class="${user.isActive ? 'status-active' : 'status-inactive'}">
+                            ${user.isActive ? 'نشط' : 'معطل'}
+                        </td>
+                        <td>
+                            ${user.id !== 1 ? 
+                                `<button class="btn btn-toggle" onclick="toggleUserStatus(${user.id}, ${user.isActive})">
+                                    ${user.isActive ? 'تعطيل' : 'تفعيل'}
+                                </button>` : 
+                                '<span>لا يمكن التعديل</span>'
+                            }
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+
+                    if (user.id !== 1) {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = user.fullName;
+                        usersSelect.appendChild(option);
+                    }
+                });
+            } catch (err) {
+                showToast(err.message, true);
+            }
+        }
+
+        async function toggleUserStatus(userId, isActive) {
+            try {
+                await apiFetch(`/support/users/${userId}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ isActive: !isActive })
+                });
+                showToast('تم تحديث الحالة بنجاح');
+                loadUsers();
+            } catch (err) {
+                showToast(err.message, true);
+            }
+        }
+
+        document.getElementById('sendAlertBtn').addEventListener('click', async () => {
+            const userId = document.getElementById('alertUser').value;
+            const priority = document.getElementById('alertPriority').value;
+            const title = document.getElementById('alertTitle').value;
+            const message = document.getElementById('alertMessage').value;
+
+            if (!userId || !title || !message) {
+                showToast('يرجى ملء جميع الحقول', true);
+                return;
+            }
+
+            try {
+                await apiFetch('/support/alerts', {
+                    method: 'POST',
+                    body: JSON.stringify({ userId, priority, title, message })
+                });
+                showToast('تم إرسال التنبيه بنجاح');
+                document.getElementById('alertTitle').value = '';
+                document.getElementById('alertMessage').value = '';
+            } catch (err) {
+                showToast(err.message, true);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', loadUsers);
+    </script>
+</body>
+</html>

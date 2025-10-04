@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #f97316, #b91c1c);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        .card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 1.25rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .logo { margin-bottom: 1.5rem; color: #f97316; font-size: 2.5rem; }
+        h1 { color: #1e293b; margin-bottom: 1.5rem; font-size: 1.5rem; }
+        .form-group { margin-bottom: 1.25rem; text-align: right; }
+        label { display: block; margin-bottom: 0.5rem; color: #334155; font-weight: 500; }
+        input { width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 1rem; }
+        input:focus { outline: none; border-color: #f97316; box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1); }
+        button {
+            width: 100%;
+            padding: 0.875rem;
+            background: #f97316;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover { background: #ea580c; }
+        .error {
+            color: #ef4444;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: #fee2e2;
+            border-radius: 0.5rem;
+            display: none;
+        }
+        .loading { display: none; justify-content: center; align-items: center; gap: 0.5rem; }
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(249,115,22,0.3);
+            border-top: 2px solid #f97316;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">📦</div>
+        <h1>نظام إدارة المخازن</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">اسم المستخدم</label>
+                <input type="text" id="username" placeholder="أدخل اسم المستخدم" required>
+            </div>
+            <div class="form-group">
+                <label for="password">كلمة المرور</label>
+                <input type="password" id="password" placeholder="أدخل كلمة المرور" required>
+            </div>
+            <button type="submit">
+                <span id="btnText">تسجيل الدخول</span>
+                <span class="loading" id="loading">
+                    <span class="spinner"></span>
+                    جاري التحقق...
+                </span>
+            </button>
+        </form>
+        <div class="error" id="error"></div>
+    </div>
+
+    <script>
+        // التحقق من جلسة نشطة
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if (payload.exp * 1000 > Date.now()) {
+                    window.location.href = 'index.html';
+                } else {
+                    localStorage.removeItem('authToken');
+                }
+            } catch (e) {
+                localStorage.removeItem('authToken');
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('error');
+            const btnText = document.getElementById('btnText');
+            const loading = document.getElementById('loading');
+
+            if (!username || !password) {
+                showError('يرجى ملء جميع الحقول');
+                return;
+            }
+
+            btnText.style.display = 'none';
+            loading.style.display = 'flex';
+            errorEl.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    localStorage.setItem('authToken', data.token);
+                    window.location.href = 'index.html';
+                } else {
+                    showError(data.error || 'فشل في تسجيل الدخول');
+                }
+            } catch (err) {
+                showError('خطأ في الاتصال بالخادم. تأكد من تشغيله.');
+                console.error(err);
+            } finally {
+                btnText.style.display = 'inline';
+                loading.style.display = 'none';
+            }
+        });
+
+        function showError(msg) {
+            const el = document.getElementById('error');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
